@@ -1,5 +1,3 @@
-const { use } = require("passport");
-
 module.exports = {  
     database: {
         host: 'localhost',
