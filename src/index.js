@@ -24,13 +24,11 @@ app.engine('.hbs', exphbs.engine({
 app.set('view engine', '.hbs');
 
 // Middleware
-console.log(database);
 app.use(session({
     secret: 'mysecretapp',
     resave: false,
     saveUninitialized: false,
     store: new MySQLStore(database)  
-
 }));
 app.use(flash());  
 app.use(morgan('dev'));

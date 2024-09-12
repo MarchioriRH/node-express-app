@@ -21,13 +21,15 @@ router.post('/add', async (req, res) => {
 
 router.get('/', async (req, res) => {
     const links = await pool.query('SELECT * FROM links');
-    console.log(links);
+    // console.log(links);
     res.render('links/list', { links });
 });
 
 router.get('/delete/:id', async (req, res) => {
     const { id } = req.params;
+    const links = await pool.query('SELECT * FROM links WHERE ID = ?', [id]);
     await pool.query('DELETE FROM links WHERE ID = ?', [id]);
+    req.flash('success', `Link to ${links[0].title} deleted successfully`);
     res.redirect('/links');
 });
 
@@ -46,6 +48,7 @@ router.post('/edit/:id', async (req, res) => {
         url
     };
     await pool.query('UPDATE links set ? WHERE id = ?', [newLink, id]);
+    req.flash('success', 'Link updated successfully');
     res.redirect('/links');
 });
 
