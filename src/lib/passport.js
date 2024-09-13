@@ -12,6 +12,9 @@ passport.use('local.signin', new LocalStrategy({
     const rows = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
     if (rows.length > 0) { // si se encontro el usuario
         const user = rows[0]; // se obtiene el usuario
+        if (user.status === 0) { // si el usuario esta deshabilitado
+            return done(null, false, req.flash('message', 'The User is Disabled'));
+        }
         // se compara la contraseña ingresada con la contraseña almacenada
         const validPassword = await helpers.matchPassword(password, user.password);
         // si la contraseña es correcta
@@ -35,15 +38,27 @@ passport.use('local.signup', new LocalStrategy({
     passReqToCallback: true
 }, async (req, username, password, done) => {
     const { fullname } = req.body;
+    const { email } = req.body;
+    const status = 'inactivo'; // se establece el estado del usuario
+    const role = 'user'; // se establece el rol del usuario
     const newUser = {
         username,
         password,
-        fullname
+        fullname,
+        email, 
+        status,
+        role
     };
-    newUser.password = await helpers.encryptPassword(password);
-    const result = await pool.query('INSERT INTO users SET ?', [newUser]);
-    newUser.id = result.insertId; // se obtiene el id del usuario y se agrea
-    return done(null, newUser); // se pasa el usuario para almacenarlo en la sesion
+    try {
+        newUser.password = await helpers.encryptPassword(password);
+        const result = await pool.query('INSERT INTO users SET ?', [newUser]);
+        //console.log(result);
+        newUser.id = result.insertId; // se obtiene el id del usuario y se agrega
+        return done(null, newUser); // se pasa el usuario para almacenarlo en la sesion
+    } catch (error) {
+        return done(error);
+    }
+
 }));
 
 // se crea una nueva estrategia para el login

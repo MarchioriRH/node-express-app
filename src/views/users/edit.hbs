@@ -1,0 +1,39 @@
+<div class="container p-4">
+    <div class="row">
+        <div class="col-md-4 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-center">{{user.username}}</h3>
+                    <form action="/users/edit/{{user.id}}" method="POST">
+                        
+                        <!-- Selección de rol -->
+                        <div class="form-group p-2">
+                            <label for="role">Role</label>
+                            <select name="role" id="role" class="form-control">
+                                <option value="">Seleccione un rol</option>
+                                <option value="admin" {{#if (user.role 'admin')}}selected{{/if}}>admin</option>
+                                <option value="usuario" {{#if (user.role 'usuario')}}selected{{/if}}>usuario</option>
+                                <option value="invitado" {{#if (user.role 'invitado')}}selected{{/if}}>invitado</option>
+                            </select>
+                        </div>
+
+                        <!-- Selección de estado -->
+                        <div class="form-group p-2">
+                            <label for="status">Status</label>
+                            <select name="status" id="status" class="form-control">
+                                <option value="">Seleccione un estado</option>
+                                <option value="activo" {{#if (user.role 'activo')}}selected{{/if}}>activo</option>
+                                <option value="inactivo" {{#if (user.role 'inactivo')}}selected{{/if}}>inactivo</option>
+                            </select>
+                        </div>
+
+                        <!-- Botón para guardar -->
+                        <div class="form-grup p-2">
+                            <button class="btn btn-success w-100">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
