@@ -5,11 +5,14 @@ const path = require('path');
 const flash = require('connect-flash');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
+const passport = require('passport');
+
 
 const { database } = require('./keys');
 
 // Initialize the app
 const app = express();
+require('./lib/passport'); //para que se ejecute el archivo passport.js
 
 // Set up the server
 app.set('port', process.env.PORT || 3000);
@@ -34,10 +37,14 @@ app.use(flash());
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json()); 
+app.use(passport.initialize()); //inicializa passport
+app.use(passport.session());    //para que passport pueda guardar los datos del usuario en la sesion
 
 // Global variables
 app.use((req, res, next) => {
     app.locals.success = req.flash('success');
+    app.locals.message = req.flash('message');
+    app.locals.user = req.user;
     next();
 });
 
