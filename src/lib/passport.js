@@ -12,21 +12,21 @@ passport.use('local.signin', new LocalStrategy({
     const rows = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
     if (rows.length > 0) { // si se encontro el usuario
         const user = rows[0]; // se obtiene el usuario
-        if (user.status === 0) { // si el usuario esta deshabilitado
-            return done(null, false, req.flash('message', 'The User is Disabled'));
+        if (user.status === 'inactivo') { // si el usuario esta deshabilitado
+            return done(null, false, req.flash('message', 'El usuario aun no ha sido habilitado. Por favor, revise su correo electrónico.'));
         }
         // se compara la contraseña ingresada con la contraseña almacenada
         const validPassword = await helpers.matchPassword(password, user.password);
         // si la contraseña es correcta
         if (validPassword) {
-            done(null, user, req.flash('success', 'Welcome ' + user.username));
+            done(null, user, req.flash('success', 'Bienvenido ' + user.username));
         } else {
-            done(null, false, req.flash('message', 'Incorrect Password'));
+            done(null, false, req.flash('message', 'El nombre de usuario o la contraseña son incorrectos.'));
         }
     // si no se encontro el usuario
     } else {
         // se pasa un mensaje de error y un false para el valor de usuario
-        return done(null, false, req.flash('message', 'The Username does not exists.'));
+        return done(null, false, req.flash('message', 'El nombre de usuario no existe.'));
     }
 })); 
 
@@ -40,19 +40,20 @@ passport.use('local.signup', new LocalStrategy({
     const { fullname } = req.body;
     const { email } = req.body;
     const status = 'inactivo'; // se establece el estado del usuario
-    const role = 'user'; // se establece el rol del usuario
+    const role = 'usuario'; // se establece el rol del usuario
+    const isNew = 1;
     const newUser = {
         username,
         password,
         fullname,
         email, 
         status,
-        role
+        role, 
+        isNew
     };
     try {
         newUser.password = await helpers.encryptPassword(password);
         const result = await pool.query('INSERT INTO users SET ?', [newUser]);
-        //console.log(result);
         newUser.id = result.insertId; // se obtiene el id del usuario y se agrega
         return done(null, newUser); // se pasa el usuario para almacenarlo en la sesion
     } catch (error) {

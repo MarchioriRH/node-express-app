@@ -22,7 +22,12 @@ app.engine('.hbs', exphbs.engine({
     extname: '.hbs',
     layoutsDir: path.join(app.get('views'), 'layouts'),
     partialDir: path.join(app.get('views'), 'partials'),
-    helpers: require('./lib/handlebars')
+    helpers: require('./lib/handlebars'),
+    helpers: {
+        eq: function(a, b) {
+            return a === b;
+        }
+    }
 }));
 app.set('view engine', '.hbs');
 

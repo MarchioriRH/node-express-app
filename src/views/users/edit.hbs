@@ -8,22 +8,22 @@
                         
                         <!-- Selección de rol -->
                         <div class="form-group p-2">
-                            <label for="role">Role</label>
+                            <label for="role">Rol</label>
                             <select name="role" id="role" class="form-control">
                                 <option value="">Seleccione un rol</option>
-                                <option value="admin" {{#if (user.role 'admin')}}selected{{/if}}>admin</option>
-                                <option value="usuario" {{#if (user.role 'usuario')}}selected{{/if}}>usuario</option>
-                                <option value="invitado" {{#if (user.role 'invitado')}}selected{{/if}}>invitado</option>
+                                <option value="admin" {{#if (eq user.role 'admin')}}selected{{/if}}>admin</option>
+                                <option value="usuario" {{#if (eq user.role 'usuario')}}selected{{/if}}>usuario</option>
+                                <option value="invitado" {{#if (eq user.role 'invitado')}}selected{{/if}}>invitado</option>
                             </select>
                         </div>
 
                         <!-- Selección de estado -->
                         <div class="form-group p-2">
-                            <label for="status">Status</label>
+                            <label for="status">Estado</label>
                             <select name="status" id="status" class="form-control">
                                 <option value="">Seleccione un estado</option>
-                                <option value="activo" {{#if (user.role 'activo')}}selected{{/if}}>activo</option>
-                                <option value="inactivo" {{#if (user.role 'inactivo')}}selected{{/if}}>inactivo</option>
+                                <option value="activo" {{#if (eq user.status 'activo')}}selected{{/if}}>activo</option>
+                                <option value="inactivo" {{#if (eq user.status 'inactivo')}}selected{{/if}}>inactivo</option>
                             </select>
                         </div>
 
