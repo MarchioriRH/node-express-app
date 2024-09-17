@@ -5,9 +5,9 @@ const { isLoggedIn, isAdmin } = require('../lib/auth');
 const pool = require('../database');
 const helpers = require('../lib/helpers');
 
-router.get('/add', isLoggedIn, (req, res) => {
-    res.render('users/add');
-});
+// router.get('/add', isLoggedIn, (req, res) => {
+//     res.render('users/add');
+// });
 
 router.get('/', isLoggedIn, isAdmin, async (req, res) => {
     const users = await pool.query('SELECT * FROM users');
@@ -32,23 +32,24 @@ router.get('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
 
 router.post('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
     const { id } = req.params;
-    const { role, status, isnew, email } = req.body;
-    
-    const newUser = {        
-        role,
-        status,
-        email,
-        isnew
-    };
+    const { role, status, isnew } = req.body;
+    console.log('params: ', req.params);
+    console.log('body: ', req.body);
+
+    const newUser = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
+    newUser[0].role = role;
+    newUser[0].status = status;
+    if (newUser[0].isnew === 1) {
+        //console.log('status: ', newUser.status);
+        newUser[0].isnew = 0;
+        // if (status === 'activo') {
+        //     helpers.sendConfirmationEmail(newUser[0].email);
+        // }
+    }
+
     try {
-        if (newUser.isnew === 1) {
-            console.log('status: ', newUser.status);
-            newUser.isnew = 0;
-            if (newUser.status === 'activo') {
-                helpers.sendConfirmationEmail(newUser.email);
-            }
-        }
-        await pool.query('UPDATE users set ? WHERE id = ?', [newUser, id]);
+        console.log('newUser: ', newUser);
+        await pool.query('UPDATE users set ? WHERE id = ?', [newUser[0], id]);
         req.flash('success', 'Usuario actualizado satisfactoriamente');
         res.redirect('/users');
     } catch (error) {

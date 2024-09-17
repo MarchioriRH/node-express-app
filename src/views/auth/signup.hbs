@@ -3,26 +3,34 @@
         <div class="col-md-4 mx-auto">
             <div class="card text-center">
                 <div class="card-header">
-                    <h3>SignUp</h3>
+                    <h3>Registro</h3>
                 </div>
                 <div class="card-body">
                     <form action="/signup" method="POST">
                         <div class="form-group p-2">
-                            <input type="text" name="fullname" class="form-control" placeholder="Full Name" required autofocus>                            
+                            <input type="text" name="fullname" class="form-control" placeholder="Nombre completo" required autofocus>                            
                         </div>
                         <div class="form-group p-2">
-                            <input type="text" name="username" class="form-control" placeholder="Username" required>
+                            <input type="text" name="username" class="form-control" placeholder="Usuario" required>
                         </div>
                         <div class="form-group p-2">
                             <input type="email" name="email" class="form-control" placeholder="Email" required>
                         </div>
                         <div class="form-group p-2">
-                            <input type="password" name="password" class="form-control" placeholder="Password" required>
+                            <input type="password" name="password" class="form-control" placeholder="Contraseña" required>
                         </div>
                         <div class="form-group p-2">
-                            <button class="btn btn-success w-100">
-                                Enviar
-                            </button>
+                            <input type="password" name="confirm_password" class="form-control" placeholder="Repita la contraseña" required>
+                        </div>
+                        <div class="form-group p-2 block">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success w-100">
+                                    Enviar
+                                </button>
+                                <a href="/signin" class="btn btn-warning w-100">
+                                    Cancelar
+                                </a>
+                            </div>
                         </div>
                     </form>
                 </div>

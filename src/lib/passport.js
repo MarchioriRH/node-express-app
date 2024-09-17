@@ -10,10 +10,12 @@ passport.use('local.signin', new LocalStrategy({
     passReqToCallback: true // permite recibir mas parametros en la funcion
 }, async (req, username, password, done) => {
     const rows = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+    console.log('ROWS: ', rows);
     if (rows.length > 0) { // si se encontro el usuario
         const user = rows[0]; // se obtiene el usuario
+        console.log('USER: ', user);
         if (user.status === 'inactivo') { // si el usuario esta deshabilitado
-            return done(null, false, req.flash('message', 'El usuario aun no ha sido habilitado. Por favor, revise su correo electrónico.'));
+            return done(null, false, req.flash('message', 'El usuario no se encuentra habilitado. Por favor, pongase en contacto con el administrador.'));
         }
         // se compara la contraseña ingresada con la contraseña almacenada
         const validPassword = await helpers.matchPassword(password, user.password);
@@ -37,6 +39,20 @@ passport.use('local.signup', new LocalStrategy({
     passwordField: 'password',
     passReqToCallback: true
 }, async (req, username, password, done) => {
+    const users = await pool.query('SELECT * FROM users');
+    if (users.length > 0) { // si el usuario ya existe
+        if (users.find(user => user.username === username)) {
+            return done(null, false, req.flash('message', 'El nombre de usuario ya existe.'));
+        } 
+        if (users.find(user => user.email === req.body.email)) {
+            return done(null, false, req.flash('message', 'El correo electrónico ya está en uso.'));
+        }
+    }
+    
+    if (req.body.password !== req.body.confirm_password) { // si las contraseñas no coinciden
+        return done(null, false, req.flash('message', 'Las contraseñas no coinciden.'));
+    }
+
     const { fullname } = req.body;
     const { email } = req.body;
     const status = 'inactivo'; // se establece el estado del usuario
@@ -62,12 +78,13 @@ passport.use('local.signup', new LocalStrategy({
 
 }));
 
-// se crea una nueva estrategia para el login
+
+// Serialización: guarda el ID del usuario en la sesión.
 passport.serializeUser((user, done) => {
     done(null, user.id);
 });
 
-// se deserializa el usuario, o sea, se obtiene el usuario a partir del id
+// Deserialización: recupera los detalles completos del usuario a partir del ID almacenado.
 passport.deserializeUser(async (id, done) => {
     const rows = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
     done(null, rows[0]);

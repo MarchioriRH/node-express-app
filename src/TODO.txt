@@ -1,2 +1,49 @@
+------------------------------------ TODO -------------------------------------
+
 - Ver tema duracion sesiones
 - Ver como atender usuarios
+
+
+-------------------------------- DEPENDENCIES ---------------------------------
+
+"dependencies": {
+    "bcryptjs": "^2.4.3", // Encriptar contraseñas, algoritmo de hashing de contraseñas que transforma una contraseña 
+                          / / en una cadena de caracteres de longitud fija.
+    
+    "connect-flash": "^0.1.1", // permite a los desarrolladores enviar un mensaje cada vez que un usuario se redirige a una página web 
+                               // específica. Por ejemplo, cada vez que un usuario inicia sesión correctamente en su cuenta, se muestra 
+                               // un mensaje indicando que la autenticación se ha realizado correctamente.
+    
+    "express": "^4.20.0", // F framework de aplicaciones web para Node.js que permite a los desarrolladores crear servidores web backend 
+                          // con JavaScript. Es el framework web más popular de Node y se considera el estándar de facto para crear aplicaciones 
+                          // web y API.
+    
+    "express-app": "file:", // Middleware para Express, que permite crear aplicaciones web de manera sencilla 
+    
+    "express-handlebars": "^8.0.1", // Motor de plantillas, que permite renderizar vistas en el servidor
+    
+    "express-mysql-session": "^3.0.3", // Middleware para Express, que permite almacenar sesiones en una base de datos MySQL
+    
+    "express-session": "^1.18.0", // Middleware para Express, que permite gestionar sesiones de usuario
+    
+    "express-validator": "^7.2.0", // Middleware para Express, que permite validar datos de entrada
+    
+    "morgan": "^1.10.0", // Middleware para Express, que permite registrar las peticiones HTTP en la consola 
+    
+    "mysql": "^2.18.1", // Driver para MySQL, que permite conectarse a una base de datos MySQL
+    
+    "nodemailer": "^6.9.15", // Cliente de correo electrónico, que permite enviar correos electrónicos desde Node.js
+    
+    "passport": "^0.7.0", // Middleware para Express, que permite autenticar usuarios
+    
+    "passport-local": "^1.0.0", // es un módulo de la librería Passport.js que permite la autenticación de usuarios en aplicaciones Node.js 
+                                // mediante un nombre de usuario y contraseña. Passport.js es un middleware de autenticación muy flexible y 
+                                // modular que se puede integrar en cualquier aplicación web basada en Express. Este middleware admite varias 
+                                // estrategias de autenticación, como local, OAuth, JWT, entre otras.
+    
+    "timeago.js": "^4.0.2" // Librería para JavaScript, que permite mostrar fechas en formato relativo (hace 5 minutos, hace 1 hora, hace 1 día,
+                           // hace 1 semana, hace 1 mes, hace 1 año)
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4" // Herramienta que permite reiniciar automáticamente la aplicación cuando se detectan cambios en los archivos
+  }
