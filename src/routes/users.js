@@ -32,24 +32,22 @@ router.get('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
 
 router.post('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
     const { id } = req.params;
-    const { role, status, isnew } = req.body;
-    console.log('params: ', req.params);
-    console.log('body: ', req.body);
+    const { role, status } = req.body;
 
-    const newUser = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
-    newUser[0].role = role;
-    newUser[0].status = status;
-    if (newUser[0].isnew === 1) {
+    const rows = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
+    const user = rows[0];
+    user.role = role;
+    user.status = status;
+    if (user.isnew === 1) {
         //console.log('status: ', newUser.status);
-        newUser[0].isnew = 0;
+        user.isnew = 0;
         // if (status === 'activo') {
         //     helpers.sendConfirmationEmail(newUser[0].email);
         // }
     }
 
-    try {
-        console.log('newUser: ', newUser);
-        await pool.query('UPDATE users set ? WHERE id = ?', [newUser[0], id]);
+    try {        
+        await pool.query('UPDATE users set ? WHERE id = ?', [user[0], id]);
         req.flash('success', 'Usuario actualizado satisfactoriamente');
         res.redirect('/users');
     } catch (error) {
