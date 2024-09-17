@@ -3,6 +3,7 @@ const router = express.Router();
 const { isLoggedIn, isAdmin } = require('../lib/auth');
 
 const pool = require('../database');
+const helpers = require('../lib/helpers');
 
 router.get('/add', isLoggedIn, (req, res) => {
     res.render('users/add');
@@ -10,7 +11,7 @@ router.get('/add', isLoggedIn, (req, res) => {
 
 router.get('/', isLoggedIn, isAdmin, async (req, res) => {
     const users = await pool.query('SELECT * FROM users');
-    console.log(users);
+    // console.log(users);
     res.render('users/list', { users });
 });
 
@@ -31,14 +32,22 @@ router.get('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
 
 router.post('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
     const { id } = req.params;
-    const { role, status } = req.body;
-    const isnew = 0;
+    const { role, status, isnew, email } = req.body;
+    
     const newUser = {        
         role,
         status,
+        email,
         isnew
     };
     try {
+        if (newUser.isnew === 1) {
+            console.log('status: ', newUser.status);
+            newUser.isnew = 0;
+            if (newUser.status === 'activo') {
+                helpers.sendConfirmationEmail(newUser.email);
+            }
+        }
         await pool.query('UPDATE users set ? WHERE id = ?', [newUser, id]);
         req.flash('success', 'Usuario actualizado satisfactoriamente');
         res.redirect('/users');
@@ -46,6 +55,11 @@ router.post('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
         req.flash('failure', 'Error al actualizar el usuario');
         res.redirect('/users');
     }
+});
+
+router.get('/pending', isLoggedIn, isAdmin, async (req, res) => {
+    const users = await pool.query('SELECT * FROM users WHERE isnew = 1');
+    res.render('users/list', { users });
 });
 
 module.exports = router;

@@ -6,7 +6,7 @@ const flash = require('connect-flash');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const passport = require('passport');
-
+const nodemailer = require('nodemailer');
 
 const { database } = require('./keys');
 
@@ -36,7 +36,9 @@ app.use(session({
     secret: 'mysecretapp',
     resave: false,
     saveUninitialized: false,
-    store: new MySQLStore(database)  
+    store: new MySQLStore(database),
+    cookie: { secure: false, maxAge: null }  // SECURE: false para que funcione en http, maxAge: null para que no expire la sesion
+                                             // en produccion se debe poner secure: true
 }));
 app.use(flash());  
 app.use(morgan('dev'));
@@ -44,6 +46,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json()); 
 app.use(passport.initialize()); //inicializa passport
 app.use(passport.session());    //para que passport pueda guardar los datos del usuario en la sesion
+//app.use(nodemailer());
 
 // Global variables
 app.use((req, res, next) => {
@@ -58,7 +61,6 @@ app.use(require('./routes'));
 app.use(require('./routes/authentication'));
 app.use('/links', require('./routes/links'));
 app.use('/users', require('./routes/users'));
-
 
 // Public
 app.use(express.static(path.join(__dirname, 'public')));

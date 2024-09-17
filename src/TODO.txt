@@ -1,0 +1,2 @@
+- Ver tema duracion sesiones
+- Ver como atender usuarios
