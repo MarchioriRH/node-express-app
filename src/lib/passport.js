@@ -10,10 +10,8 @@ passport.use('local.signin', new LocalStrategy({
     passReqToCallback: true // permite recibir mas parametros en la funcion
 }, async (req, username, password, done) => {
     const rows = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
-    console.log('ROWS: ', rows);
     if (rows.length > 0) { // si se encontro el usuario
         const user = rows[0]; // se obtiene el usuario
-        console.log('USER: ', user);
         if (user.status === 'inactivo') { // si el usuario esta deshabilitado
             return done(null, false, req.flash('message', 'El usuario no se encuentra habilitado. Por favor, pongase en contacto con el administrador.'));
         }

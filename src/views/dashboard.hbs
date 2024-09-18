@@ -1,11 +1,18 @@
-<div class="conatiner p-4"></div>
+<div class="conatiner p-4">
     <div class="row">
         <div class="col-md-4 mx-auto">
             <div class="card text-center">
                 <div class="card-body">
                     <h3>Bienvenido {{user.fullname}}</h3>
-                    <h4>{{user.username}}</h4>        
-                   
+                    <h4>{{user.username}}</h4> 
+                    {{#if message}}
+                        <div class="alert alert-info">
+                            {{message}}
+                        </div>
+                        <div class="form-grup p-2"></div>
+                            <a href="/users/pending" type="button" class="btn btn-success btn-block">Ver</a>
+                        </div>
+                    {{/if}}                   
                 </div>            
             </div>
         </div>

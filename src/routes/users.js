@@ -26,28 +26,27 @@ router.get('/delete/:id', isLoggedIn, isAdmin, async (req, res) => {
 router.get('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
     const { id } = req.params;
     const users = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
-    console.log(users[0]);
-    res.render('users/edit', {user: users[0]});
+    console.log("Users: ", users[0]);
+    const user = users[0];
+    res.render('users/edit', {user: user});
 });
 
 router.post('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
     const { id } = req.params;
     const { role, status } = req.body;
-
-    const rows = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
-    const user = rows[0];
-    user.role = role;
-    user.status = status;
-    if (user.isnew === 1) {
-        //console.log('status: ', newUser.status);
-        user.isnew = 0;
-        // if (status === 'activo') {
-        //     helpers.sendConfirmationEmail(newUser[0].email);
-        // }
-    }
-
+    
     try {        
-        await pool.query('UPDATE users set ? WHERE id = ?', [user[0], id]);
+        const rows = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
+        const user = rows[0];
+        user.role = role;
+        user.status = status;
+        if (user.isnew === 1 && status === 'activo') {
+            user.isnew = 0; 
+            // Verificar si el usuario tiene un correo registrado y si las credenciales son correctas
+            // helpers.sendConfirmationEmail(newUser[0].email);            
+        } 
+
+        await pool.query('UPDATE users set ? WHERE id = ?', [user, id]);
         req.flash('success', 'Usuario actualizado satisfactoriamente');
         res.redirect('/users');
     } catch (error) {

@@ -8,8 +8,9 @@ module.exports = {
     mail: {
         service: 'gmail',
         auth: {
-          user: 'defensa.civil.tandil@gmail.com', // Cambia esto por tu correo
-          pass: 'defensatandil2017'        // Cambia esto por tu contraseña
+          user: 'defensa.civil.tandil@gmail.com', 
+          pass: 'defensatandil2017'        
         }
-    }
+    },
+    secret: 'd2e1a72fcca58-71944b7b577sm6573678b3a.118',
 };
