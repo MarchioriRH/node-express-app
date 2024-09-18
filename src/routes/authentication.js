@@ -3,13 +3,29 @@ const router = express.Router();
 const passport = require('passport');
 const { isLoggedIn, isNotLoggedIn, isAdmin } = require('../lib/auth');
 
+const { signinValidation, signupValidation } = require('../lib/validators'); // ajusta la ruta según la ubicación de tu archivo validators.js
+const { validationResult } = require('express-validator');
+
+
 const pool = require('../database');
 
 router.get('/signup', isNotLoggedIn, (req, res) => {
     res.render('auth/signup');
 });
 
-router.post('/signup', isNotLoggedIn, (req, res, next) => {
+router.post('/signup', isNotLoggedIn, signupValidation, (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        console.log('Error.array: ', errors.array());
+        const error = errors.array()[0].msg;
+        console.log('Error: ', error);
+        return res.render('auth/signup', { 
+          errors: errors.array(),
+          message: req.flash('message', error)
+        });
+    }
+
     passport.authenticate('local.signup', (err, user, info) => {
         if (err) {
             return next(err); // Manejo de errores
@@ -28,7 +44,16 @@ router.get('/signin', isNotLoggedIn, (req, res) => {
     res.render('auth/signin');
 });
 
-router.post('/signin', isNotLoggedIn, (req, res, next) => {    
+router.post('/signin', isNotLoggedIn, signinValidation, (req, res, next) => {    
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.render('auth/signin', { 
+          errors: errors.array(),
+          message: req.flash('message')
+        });
+    }
+
     passport.authenticate('local.signin', {
         successRedirect: '/dashboard',
         failureRedirect: '/signin',
