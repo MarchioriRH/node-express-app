@@ -1,4 +1,3 @@
-// validators.js
 const { check } = require('express-validator');
 
 const signinValidation = [

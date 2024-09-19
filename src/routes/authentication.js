@@ -3,7 +3,7 @@ const router = express.Router();
 const passport = require('passport');
 const { isLoggedIn, isNotLoggedIn, isAdmin } = require('../lib/auth');
 
-const { signinValidation, signupValidation } = require('../lib/validators'); // ajusta la ruta según la ubicación de tu archivo validators.js
+const { signinValidation, signupValidation } = require('../lib/validators'); 
 const { validationResult } = require('express-validator');
 
 
@@ -17,12 +17,9 @@ router.post('/signup', isNotLoggedIn, signupValidation, (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        console.log('Error.array: ', errors.array());
-        const error = errors.array()[0].msg;
-        console.log('Error: ', error);
         return res.render('auth/signup', { 
-          errors: errors.array(),
-          message: req.flash('message', error)
+          errors: errors.array(),  
+          message: req.flash('message')
         });
     }
 
