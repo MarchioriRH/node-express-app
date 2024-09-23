@@ -69,7 +69,33 @@ router.get('/profile/:id', isLoggedIn, async (req, res) => {
     res.render('users/profile', { user });
 });
 
-async function updateUserStatus(req, res, id, role, status) {
+router.get('/profile/edit/:id', isLoggedIn, async (req, res) => {
+    const { id } = req.params;
+    const users = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
+    if (users.length === 0) {
+        req.flash('failure', 'Usuario no encontrado');
+        res.redirect('/users');
+    }
+    const user = users[0];    
+    res.render('users/profile-edit', { user });
+});
+
+router.post('/profile/edit/:id', isLoggedIn, async (req, res) => {
+    const { id } = req.params;
+    const { role, status, password, newPassword, confirmPassword } = req.body;
+    if (!helpers.matchPassword(user.password, password)) {
+        req.flash('failure', 'Contraseña actual incorrecta');
+        res.redirect('/users/profile/edit/' + id);
+    }
+    if (newPassword !== confirmPassword) {
+        req.flash('failure', 'La contraseña nueva y su confirmacion no coinciden');
+        res.redirect('/users/profile/edit/' + id);
+    }
+    await updateUserStatus(req, res, id, role, status, newPassword); 
+});
+
+
+async function updateUserStatus(req, res, id, role, status, newPassword) {
     try {
         const rows = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
         if (rows.length === 0) {
@@ -79,6 +105,9 @@ async function updateUserStatus(req, res, id, role, status) {
         const user = rows[0];
         user.role = role;
         user.status = status;
+        if (newPassword) {
+            user.password = await helpers.encryptPassword(newPassword);
+        }
         if (user.isnew === 1 && status === 'activo') {
             user.isnew = 0;
             // Verificar si el usuario tiene un correo registrado y si las credenciales son correctas
