@@ -6,11 +6,11 @@
                 <thead>
                     <tr>
                         <th>Id</th>
-                        <th>Name</th>
+                        <th>Usuario</th>
                         <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -22,8 +22,12 @@
                         <td>{{role}}</td>
                         <td>{{status}}</td>
                         <td>
-                            <a href="/users/edit/{{id}}" class="btn btn-primary">Edit</a>
-                            <a href="/users/delete/{{id}}"  onclick="return confirmDelete({{username}});" class="btn btn-danger">Delete</a>
+                            {{#if (eq isnew 1)}}
+                                <a href="/users/pending/activate/{{id}}" class="btn btn-success">Activar</a>
+                            {{else}}
+                                <a href="/users/edit/{{id}}" class="btn btn-primary">Editar</a>
+                            {{/if}}
+                            <a href="/users/delete/{{id}}"  onclick="return confirmDelete({{username}});" class="btn btn-danger">Eliminar</a>
                         </td>
                     </tr>
                     {{/each}}

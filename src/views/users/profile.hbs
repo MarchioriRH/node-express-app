@@ -1,0 +1,25 @@
+<div class="conatiner p-4"></div>
+    <div class="row">
+        <div class="col-md-4 mx-auto">
+            <div class="card text-center">
+                <div class="card-header">
+                    <h3>Perfil</h3>
+                </div>
+                <div class="card-body">
+                    <h4>Nombre: {{user.fullname}}</h4>
+                    <h4>Usuario: {{user.username}}</h4> 
+                    <h4>Email: {{user.email}}</h4>
+                    <h4>Rol: {{user.role}}</h4>                               
+                    <div class="form-group p-2 block"></div>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-success w-100" href="users/edit/{{user.id}}">
+                                Editar
+                            </a>
+                            <a type="button" class="btn btn-warning w-100" href="/dashboard">Cancelar</a>
+                        </div>
+                    </div>            
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
