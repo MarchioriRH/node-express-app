@@ -6,24 +6,24 @@
                     <h3>Editar</h3>
                 </div>
                 <div class="card-body">
-                    <form action="/users/edit/{{user.id}}" method="POST">
+                    <form action="/users/edit/{{editUser.id}}" method="POST">
                         <div class="form-group p-2">
-                            <input type="text" value="{{user.fullname}}" name="fullname" class="form-control" placeholder="Nombre completo" required autofocus>                            
+                            <input type="text" value="{{editUser.fullname}}" name="fullname" class="form-control" placeholder="Nombre completo" required autofocus>                            
                         </div>
                         <div class="form-group p-2">
-                            <input type="text" value="{{user.username}}" name="username" class="form-control" placeholder="Usuario" required>
+                            <input type="text" value="{{editUser.username}}" name="username" class="form-control" placeholder="Usuario" required>
                         </div>
                         <div class="form-group p-2">
-                            <input type="email" value="{{user.email}}" name="email" class="form-control" placeholder="Email" required>
+                            <input type="email" value="{{editUser.email}}" name="email" class="form-control" placeholder="Email" required>
                         </div>
                         <!-- Selección de rol -->
                         <div class="form-group p-2">
                             <label for="role">Rol</label>
                             <select name="role" id="role" class="form-control">
                                 <option value="">Seleccione un rol</option>
-                                <option value="admin" {{#if (eq user.role 'admin')}}selected{{/if}}>admin</option>
-                                <option value="usuario" {{#if (eq user.role 'usuario')}}selected{{/if}}>usuario</option>
-                                <option value="invitado" {{#if (eq user.role 'invitado')}}selected{{/if}}>invitado</option>
+                                <option value="admin" {{#if (eq editUser.role 'admin')}}selected{{/if}}>admin</option>
+                                <option value="usuario" {{#if (eq editUser.role 'usuario')}}selected{{/if}}>usuario</option>
+                                <option value="invitado" {{#if (eq editUser.role 'invitado')}}selected{{/if}}>invitado</option>
                             </select>
                         </div>
 
@@ -32,15 +32,15 @@
                             <label for="status">Estado</label>
                             <select name="status" id="status" class="form-control">
                                 <option value="">Seleccione un estado</option>
-                                <option value="activo" {{#if (eq user.status 'activo')}}selected{{/if}}>activo</option>
-                                <option value="inactivo" {{#if (eq user.status 'inactivo')}}selected{{/if}}>inactivo</option>
+                                <option value="activo" {{#if (eq editUser.status 'activo')}}selected{{/if}}>activo</option>
+                                <option value="inactivo" {{#if (eq editUser.status 'inactivo')}}selected{{/if}}>inactivo</option>
                             </select>
                         </div>
 
                         <div class="form-group p-2 block">
                             <div class="d-flex gap-2">
                                 <button class="btn btn-success w-100">
-                                    Enviar
+                                    Guardar
                                 </button>
                                 <button type="button" class="btn btn-warning w-100" onclick="window.history.back();">                               
                                     Cancelar
