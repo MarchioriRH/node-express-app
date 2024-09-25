@@ -41,7 +41,7 @@ async function updateUserStatus(req, res, id, role, status, newPassword = null) 
     try {
         const user = await getUserById(id);
         if (!user) return handleUserNotFound(req, res);
-
+        
         user.role = role;
         user.status = status;
         if (req.body.fullname) {
@@ -130,6 +130,7 @@ router.get('/profile/edit/:id', isLoggedIn, async (req, res) => {
     res.render('users/profile-edit', { user });
 });
 
+
 router.get('/pending', isLoggedIn, isAdmin, async (req, res) => {
     const users = await pool.query('SELECT * FROM users WHERE isnew = 1');
     if (users.length === 0) {
@@ -143,8 +144,8 @@ router.post('/profile/edit/:id', isLoggedIn, async (req, res) => {
     const { password, newPassword, confirmPassword } = req.body;
     const userToEdit = await getUserById(req.params.id);
     if (!userToEdit) return handleUserNotFound(req, res);
-
-    if (!helpers.matchPassword(userToEdit.password, password)) {
+    
+    if (!await helpers.matchPassword(password, userToEdit.password)) {
         req.flash('message', 'Contraseña actual incorrecta');
         return res.redirect(`/users/profile/edit/${req.params.id}`);
     }

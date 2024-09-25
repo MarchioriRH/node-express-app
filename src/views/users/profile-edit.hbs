@@ -6,7 +6,7 @@
                     <h3>Editar</h3>
                 </div>
                 <div class="card-body">
-                    <form action="/users/edit/{{user.id}}" method="POST">
+                    <form action="/users/profile/edit/{{user.id}}" method="POST">
                         <div class="form-group p-2">
                             <input type="text" value="{{user.fullname}}" name="fullname" class="form-control" placeholder="Nombre completo" required autofocus>                            
                         </div>
@@ -32,9 +32,9 @@
                                 <button class="btn btn-success w-100">
                                     Enviar
                                 </button>
-                                <button type="button" class="btn btn-warning w-100" onclick="window.history.back();">                               
+                                <a type="button" class="btn btn-warning w-100" onclick="window.history.back();">                               
                                     Cancelar
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </form>

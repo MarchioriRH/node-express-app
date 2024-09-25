@@ -54,7 +54,7 @@ app.use((req, res, next) => {
     app.locals.user = req.user; // crea una variable global user que se puede usar en cualquier vista, req.user es el usuario autenticado
     next();
 });
-console.log(app.locals);
+//console.log(app.locals);
 
 // Routes
 app.use(require('./routes'));
