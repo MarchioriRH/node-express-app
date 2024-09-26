@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { isLoggedIn, isAdmin } = require('../lib/auth');
+const { isLoggedIn, isAdmin, checkRoles } = require('../lib/auth');
 const pool = require('../database');
 const helpers = require('../lib/helpers');
 

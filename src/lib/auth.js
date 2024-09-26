@@ -19,5 +19,15 @@ module.exports = {
             return next();
         }
         return res.redirect('/dashboard');
+    },
+
+    checkRoles(roles) {
+        return function(req, res, next) {
+            if (roles.includes(req.user.role)) {
+                return next();
+            }
+            req.flash('message', 'No tienes permisos para acceder a esta página');
+            return res.redirect('/dashboard');
+        }
     }
 };
