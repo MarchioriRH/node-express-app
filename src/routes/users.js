@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { isLoggedIn, isAdmin } = require('../lib/auth');
+const { isLoggedIn, isAdmin, checkRoles } = require('../lib/auth');
 
 const pool = require('../database');
 const helpers = require('../lib/helpers');
@@ -9,7 +9,7 @@ router.get('/create', isLoggedIn, isAdmin, (req, res) => {
     res.render('auth/signup');
 });
 
-router.get('/', isLoggedIn, isAdmin, async (req, res) => {
+router.get('/', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     const users = await pool.query('SELECT * FROM users');
     // console.log(users);
     res.render('users/list', { users });
