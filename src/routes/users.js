@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { isLoggedIn, isAdmin, checkRoles } = require('../lib/auth');
+const { isLoggedIn, checkRoles } = require('../lib/auth');
 const pool = require('../database');
 const helpers = require('../lib/helpers');
+const { use } = require('passport');
 
 // Funciones comunes
 /**
@@ -49,9 +50,7 @@ async function updateUserStatus(req, res, id, role, status, newPassword = null) 
         if (!Array.isArray(roles)) {
             roles = [roles];  // Si es un solo valor, lo convertimos en un array
         }
-        console.log('roles ', roles);
-
-        //user.role = role;
+        
         user.status = status;
         if (req.body.fullname) {
             user.fullname = req.body.fullname;
@@ -67,10 +66,8 @@ async function updateUserStatus(req, res, id, role, status, newPassword = null) 
         }
 
         await pool.query('UPDATE users SET ? WHERE id = ?', [user, id]);
-        for (const role of roles) {
-            const roleId = await pool.query('SELECT id FROM roles WHERE nombre = ?', [role]);
-            await pool.query('INSERT INTO users_roles SET ?', { user_id: id, role_id: roleId[0].id });
-        }
+        
+        await updateUserRoles(id, roles);
 
         req.flash('success', 'Usuario actualizado satisfactoriamente');
         const pendingUsers = await pool.query('SELECT * FROM users WHERE isnew = 1');
@@ -81,6 +78,52 @@ async function updateUserStatus(req, res, id, role, status, newPassword = null) 
     }
 }
 
+async function updateUserRoles (id, newRoles) {
+    try {
+        // 1. Obtener los roles actuales del usuario desde la tabla users_roles
+        const currentRoleNames = await getUserRoles(id);
+        
+        // 2. Comparar los roles nuevos con los actuales
+
+        // Roles para agregar (en newRoles pero no en currentRoles)
+        const rolesToAdd = newRoles.filter(role => !currentRoleNames.includes(role));
+        
+        // Roles para eliminar (en currentRoles pero no en newRoles)
+        const rolesToRemove = currentRoleNames.filter(role => !newRoles.includes(role));
+        
+        // 3. Agregar los nuevos roles a users_roles
+        for (const role of rolesToAdd) {
+            const roleId = await pool.query('SELECT id FROM roles WHERE nombre = ?', [role]);
+            if (roleId.length > 0) {
+                await pool.query('INSERT INTO users_roles SET ?', { user_id: id, role_id: roleId[0].id });
+                console.log(`Role '${role}' added to user ${id}`);
+            }
+        }
+
+        // 4. Eliminar los roles no seleccionados de users_roles
+        for (const role of rolesToRemove) {
+            const roleId = await pool.query('SELECT id FROM roles WHERE nombre = ?', [role]);
+            if (roleId.length > 0) {
+                await pool.query('DELETE FROM users_roles WHERE user_id = ? AND role_id = ?', [id, roleId[0].id]);
+                console.log(`Role '${role}' removed from user ${id}`);
+            }
+        }
+
+    } catch (error) {
+        console.error('Error updating user roles:', error);
+    }
+};
+
+
+async function getUserRoles(userId) {    
+    const userRoles = await pool.query(`SELECT r.nombre 
+        FROM users_roles ur 
+        INNER JOIN roles r 
+        ON ur.role_id = r.id  
+        WHERE ur.user_id = ?`, [userId]);
+    return userRoles.map(role => role.nombre);
+}
+
 // Rutas
 /**
  * Rutas para gestionar usuarios
@@ -88,47 +131,25 @@ async function updateUserStatus(req, res, id, role, status, newPassword = null) 
  * @category Rutas
  * @path {GET} /users/create Crear usuario
  */
-router.get('/create', isLoggedIn, isAdmin, (req, res) => res.render('auth/signup'));
+router.get('/create', isLoggedIn, checkRoles(['admin']), (req, res) => res.render('auth/signup'));
 
 /**
  * @path {POST} /
  */
-// router.get('/', isLoggedIn, isAdmin, async (req, res) => {
-//     const users = await pool.query('SELECT * FROM users');
-//     const roles = await pool.query('SELECT * FROM roles');
-//     for (const user of users) {
-//         const userRoles = await pool.query('SELECT role_id FROM users_roles WHERE user_id = ?', [user.ID]);
-//         for (const role of roles) {
-//             const userRole = await pool.query('SELECT * FROM roles WHERE id = ?', [role.id]);
-//             user.roles += (userRole[0]);
-//         }
-//         //user.roles = userRoles.map(role => role.role_id);
-//         console.log('user '+ user.ID, user);
-//         console.log('userRoles '+ user.ID, userRoles);
-//     }
-//     res.render('users/list', { users, roles });
-// });
-
-router.get('/', isLoggedIn, isAdmin, async (req, res) => {
+router.get('/', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     try {
         const users = await pool.query('SELECT * FROM users');
         const roles = await pool.query('SELECT * FROM roles'); // Si es necesario usar los roles globalmente en el template
 
         for (const user of users) {
             // Obtener los roles de cada usuario utilizando un JOIN para evitar múltiples consultas
-            const userRoles = await pool.query(`
-                SELECT r.nombre
-                FROM users_roles ur
-                INNER JOIN roles r ON ur.role_id = r.id
-                WHERE ur.user_id = ?
-            `, [user.id]);
-
-            console.log('userRoles:', userRoles);
+            const userRoles = await getUserRoles(user.id);
+            //console.log('userRoles:', userRoles);
             // Guardar los roles del usuario como un array de nombres
-            user.roles = userRoles.map(role => role.nombre); // Esto almacena los nombres de los roles en un array
+            user.roles = userRoles; // Esto almacena los nombres de los roles en un array
         }
 
-        console.log('Users with roles:', users);
+        //console.log('Users with roles:', users);
         res.render('users/list', { users, roles }); // Pasamos los usuarios y los roles al template
     } catch (error) {
         console.error('Error retrieving users and roles:', error);
@@ -137,7 +158,7 @@ router.get('/', isLoggedIn, isAdmin, async (req, res) => {
 });
 
 
-router.get('/delete/:id', isLoggedIn, isAdmin, async (req, res) => {
+router.get('/delete/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     const userToDelete = await getUserById(req.params.id);
     if (!userToDelete) return handleUserNotFound(req, res);
 
@@ -146,34 +167,33 @@ router.get('/delete/:id', isLoggedIn, isAdmin, async (req, res) => {
     res.redirect('/users');
 });
 
-router.get('/activate/:id', isLoggedIn, isAdmin, async (req, res) => {
+router.get('/activate/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     const userToActivate = await getUserById(req.params.id);
     if (!userToActivate) return handleUserNotFound(req, res);
-
-    res.render('users/activate', { user: req.user, activateUser: userToActivate });
+    const userRoles = await getUserRoles(userToActivate.id);
+    res.render('users/activate', { user: req.user, activateUser: userToActivate, roles: userRoles });
 });
 
-router.post('/activate/:id', isLoggedIn, isAdmin, async (req, res) => {
-    console.log('req.body ', req.body);
+router.post('/activate/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     await updateUserStatus(req, res, req.params.id, req.body.role, req.body.status);
 });
 
-router.get('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
+router.get('/edit/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     const userToEdit = await getUserById(req.params.id);
     if (!userToEdit) return handleUserNotFound(req, res);
-
-    res.render('users/edit', { user: req.user, editUser: userToEdit });
+    const userRoles = await getUserRoles(userToEdit.id);
+    res.render('users/edit', { user: req.user, editUser: userToEdit, roles: userRoles });
 });
 
-router.post('/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
+router.post('/edit/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     await updateUserStatus(req, res, req.params.id, req.body.role, req.body.status);
 });
 
 router.get('/profile/:id', isLoggedIn, async (req, res) => {
     const user = await getUserById(req.params.id);
     if (!user) return handleUserNotFound(req, res);
-    
-    res.render('users/profile', { user });
+    const userRoles = await getUserRoles(user.id);
+    res.render('users/profile', { user, userRoles });
 });
 
 router.get('/profile/edit/:id', isLoggedIn, async (req, res) => {
@@ -184,7 +204,7 @@ router.get('/profile/edit/:id', isLoggedIn, async (req, res) => {
 });
 
 
-router.get('/pending', isLoggedIn, isAdmin, async (req, res) => {
+router.get('/pending', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     const users = await pool.query('SELECT * FROM users WHERE isnew = 1');
     if (users.length === 0) {
         req.flash('message', 'No hay usuarios pendientes de activacion');

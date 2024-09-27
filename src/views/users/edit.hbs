@@ -16,8 +16,39 @@
                         <div class="form-group p-2">
                             <input type="email" value="{{editUser.email}}" name="email" class="form-control" placeholder="Email" required>
                         </div>
-                        <!-- Selección de rol -->
+
+                        <!-- Selección de rol con checkboxes -->
                         <div class="form-group p-2">
+                            <label for="roles">Roles</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="secretaria" value="secretary" 
+                                {{#contains roles 'secretary'}}checked{{/contains}}>
+                                <label class="form-check-label" for="secretaria">Secretaria</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="administrador" value="admin" 
+                                {{#contains roles 'admin'}}checked{{/contains}}>
+                                <label class="form-check-label" for="administrador">Administrador</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="empleado" value="employee" 
+                                {{#contains roles 'employee'}}checked{{/contains}}>
+                                <label class="form-check-label" for="empleado">Empleado</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="trabajadora_social" value="social" 
+                                {{#contains roles 'social'}}checked{{/contains}}>
+                                <label class="form-check-label" for="trabajadora_social">Trabajadora Social</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="visitante" value="guest" 
+                                {{#contains roles 'guest'}}checked{{/contains}}>
+                                <label class="form-check-label" for="visitante">Visitante</label>
+                            </div>
+                        </div>
+
+                        <!-- Selección de rol -->
+                        {{!-- <div class="form-group p-2">
                             <label for="role">Rol</label>
                             <select name="role" id="role" class="form-control">
                                 <option value="">Seleccione un rol</option>
@@ -25,7 +56,7 @@
                                 <option value="usuario" {{#if (eq editUser.role 'usuario')}}selected{{/if}}>usuario</option>
                                 <option value="invitado" {{#if (eq editUser.role 'invitado')}}selected{{/if}}>invitado</option>
                             </select>
-                        </div>
+                        </div> --}}
 
                         <!-- Selección de estado -->
                         <div class="form-group p-2">
