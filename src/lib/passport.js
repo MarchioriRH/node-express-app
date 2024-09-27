@@ -54,7 +54,7 @@ passport.use('local.signup', new LocalStrategy({
     const { fullname } = req.body;
     const { email } = req.body;
     const status = 'inactivo'; // se establece el estado del usuario
-    const role = 'usuario'; // se establece el rol del usuario
+    const role = 'guest'; // se establece el rol del usuario
     const isNew = 1;
     const newUser = {
         username,
@@ -68,6 +68,7 @@ passport.use('local.signup', new LocalStrategy({
     try {
         newUser.password = await helpers.encryptPassword(password);
         const result = await pool.query('INSERT INTO users SET ?', [newUser]);
+        await pool.query('INSERT INTO users_roles SET ?', { user_id: result.insertId, role_id: 4 });
         newUser.id = result.insertId; // se obtiene el id del usuario y se agrega
         return done(null, newUser); // se pasa el usuario para almacenarlo en la sesion
     } catch (error) {

@@ -26,7 +26,18 @@ app.engine('.hbs', exphbs.engine({
     helpers: {
         eq: function(a, b) {
             return a === b;
-        }
+        },
+        contains: function(array, value, options) {
+            if (array && array.indexOf(value) !== -1) {
+                return options.fn(this);
+            } else {
+                return options.inverse(this);
+            }
+        },
+        lookup: function (roles, roleId) {
+            const role = roles.find(role => role.id === roleId);
+            return role ? role.name : '';
+        },
     }
 }));
 app.set('view engine', '.hbs');

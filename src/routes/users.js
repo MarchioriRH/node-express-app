@@ -42,7 +42,16 @@ async function updateUserStatus(req, res, id, role, status, newPassword = null) 
         const user = await getUserById(id);
         if (!user) return handleUserNotFound(req, res);
         
-        user.role = role;
+        // Obtener la lista de roles desde req.body
+        let roles = req.body['role[]'];
+
+        // Verificar si es un array o solo un valor
+        if (!Array.isArray(roles)) {
+            roles = [roles];  // Si es un solo valor, lo convertimos en un array
+        }
+        console.log('roles ', roles);
+
+        //user.role = role;
         user.status = status;
         if (req.body.fullname) {
             user.fullname = req.body.fullname;
@@ -58,6 +67,10 @@ async function updateUserStatus(req, res, id, role, status, newPassword = null) 
         }
 
         await pool.query('UPDATE users SET ? WHERE id = ?', [user, id]);
+        for (const role of roles) {
+            const roleId = await pool.query('SELECT id FROM roles WHERE nombre = ?', [role]);
+            await pool.query('INSERT INTO users_roles SET ?', { user_id: id, role_id: roleId[0].id });
+        }
 
         req.flash('success', 'Usuario actualizado satisfactoriamente');
         const pendingUsers = await pool.query('SELECT * FROM users WHERE isnew = 1');
@@ -80,10 +93,49 @@ router.get('/create', isLoggedIn, isAdmin, (req, res) => res.render('auth/signup
 /**
  * @path {POST} /
  */
+// router.get('/', isLoggedIn, isAdmin, async (req, res) => {
+//     const users = await pool.query('SELECT * FROM users');
+//     const roles = await pool.query('SELECT * FROM roles');
+//     for (const user of users) {
+//         const userRoles = await pool.query('SELECT role_id FROM users_roles WHERE user_id = ?', [user.ID]);
+//         for (const role of roles) {
+//             const userRole = await pool.query('SELECT * FROM roles WHERE id = ?', [role.id]);
+//             user.roles += (userRole[0]);
+//         }
+//         //user.roles = userRoles.map(role => role.role_id);
+//         console.log('user '+ user.ID, user);
+//         console.log('userRoles '+ user.ID, userRoles);
+//     }
+//     res.render('users/list', { users, roles });
+// });
+
 router.get('/', isLoggedIn, isAdmin, async (req, res) => {
-    const users = await pool.query('SELECT * FROM users');
-    res.render('users/list', { users });
+    try {
+        const users = await pool.query('SELECT * FROM users');
+        const roles = await pool.query('SELECT * FROM roles'); // Si es necesario usar los roles globalmente en el template
+
+        for (const user of users) {
+            // Obtener los roles de cada usuario utilizando un JOIN para evitar múltiples consultas
+            const userRoles = await pool.query(`
+                SELECT r.nombre
+                FROM users_roles ur
+                INNER JOIN roles r ON ur.role_id = r.id
+                WHERE ur.user_id = ?
+            `, [user.id]);
+
+            console.log('userRoles:', userRoles);
+            // Guardar los roles del usuario como un array de nombres
+            user.roles = userRoles.map(role => role.nombre); // Esto almacena los nombres de los roles en un array
+        }
+
+        console.log('Users with roles:', users);
+        res.render('users/list', { users, roles }); // Pasamos los usuarios y los roles al template
+    } catch (error) {
+        console.error('Error retrieving users and roles:', error);
+        res.status(500).send('Error retrieving users and roles');
+    }
 });
+
 
 router.get('/delete/:id', isLoggedIn, isAdmin, async (req, res) => {
     const userToDelete = await getUserById(req.params.id);
@@ -102,6 +154,7 @@ router.get('/activate/:id', isLoggedIn, isAdmin, async (req, res) => {
 });
 
 router.post('/activate/:id', isLoggedIn, isAdmin, async (req, res) => {
+    console.log('req.body ', req.body);
     await updateUserStatus(req, res, req.params.id, req.body.role, req.body.status);
 });
 

@@ -8,15 +8,34 @@
                 <div class="card-body">
                     <form action="/users/activate/{{activateUser.id}}" method="POST">
                         
-                        <!-- Selección de rol -->
+                        <!-- Selección de rol con checkboxes -->
                         <div class="form-group p-2">
-                            <label for="role">Rol</label>
-                            <select name="role" id="role" class="form-control">
-                                <option value="">Seleccione un rol</option>
-                                <option value="admin" {{#if (eq activateUser.role 'admin')}}selected{{/if}}>admin</option>
-                                <option value="usuario" {{#if (eq activateUser.role 'usuario')}}selected{{/if}}>usuario</option>
-                                <option value="invitado" {{#if (eq activateUser.role 'invitado')}}selected{{/if}}>invitado</option>
-                            </select>
+                            <label for="roles">Roles</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="secretaria" value="secretary" 
+                                {{#if (eq activateUser.role 'secretaria')}}checked{{/if}}>
+                                <label class="form-check-label" for="secretaria">Secretaria</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="administrador" value="admin" 
+                                {{#if (eq activateUser.role 'administrador')}}checked{{/if}}>
+                                <label class="form-check-label" for="administrador">Administrador</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="empleado" value="employee" 
+                                {{#if (eq activateUser.role 'empleado')}}checked{{/if}}>
+                                <label class="form-check-label" for="empleado">Empleado</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="trabajadora_social" value="social" 
+                                {{#if (eq activateUser.role 'trabajadora_social')}}checked{{/if}}>
+                                <label class="form-check-label" for="trabajadora_social">Trabajadora Social</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="role[]" id="visitante" value="guest" 
+                                {{#if (eq activateUser.role 'visitante')}}checked{{/if}}>
+                                <label class="form-check-label" for="visitante">Visitante</label>
+                            </div>
                         </div>
 
                         <!-- Selección de estado -->

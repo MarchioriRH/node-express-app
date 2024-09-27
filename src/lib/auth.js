@@ -4,6 +4,7 @@ module.exports = {
         if (req.isAuthenticated()) { 
             return next();
         }
+        req.flash('message', 'Debe autenticarse para acceder a esta página');
         return res.redirect('/signin');
     },
     // Si el usuario no esta autenticado, se ejecuta next() y se redirige a la pagina principal
@@ -18,6 +19,7 @@ module.exports = {
         if (req.user.role === 'admin') {
             return next();
         }
+        req.flash('message', 'No tienes permisos para acceder a esta página');
         return res.redirect('/dashboard');
     },
 
