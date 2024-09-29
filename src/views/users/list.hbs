@@ -10,6 +10,7 @@
                         <th>Email</th>
                         <th>Estado</th>
                         <th>Roles</th>
+                        <th>Creado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -24,6 +25,8 @@
                             {{#each roles}}
                                 {{this}}
                             {{/each}}
+                        </td>
+                        <td>{{timeago created_at}}</td>
                         <td>
                             {{#if (eq status "inactivo" or isnew 1) }}
                                 <a href="/users/activate/{{id}}" class="btn btn-success">Activar</a>

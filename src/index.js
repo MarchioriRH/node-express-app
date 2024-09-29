@@ -16,45 +16,29 @@ require('./lib/passport'); //para que se ejecute el archivo passport.js
 
 // Set up the server
 app.set('port', process.env.PORT || 3000);
-app.set('views', path.join(__dirname, 'views'));
-app.engine('.hbs', exphbs.engine({
-    defaultLayout: 'main',
-    extname: '.hbs',
-    layoutsDir: path.join(app.get('views'), 'layouts'),
-    partialDir: path.join(app.get('views'), 'partials'),
-    helpers: require('./lib/handlebars'),
-    helpers: {
-        eq: function(a, b) {
-            return a === b;
-        },
-        contains: function(array, value, options) {
-            if (array && array.indexOf(value) !== -1) {
-                return options.fn(this);
-            } else {
-                return options.inverse(this);
-            }
-        },
-        lookup: function (roles, roleId) {
-            const role = roles.find(role => role.id === roleId);
-            return role ? role.name : '';
-        },
-    }
+app.set('views', path.join(__dirname, 'views')); // para que el servidor sepa donde estan las vistas
+app.engine('.hbs', exphbs.engine({ // configuracion de handlebars
+    defaultLayout: 'main', // layout por defecto
+    extname: '.hbs', // extension de los archivos
+    layoutsDir: path.join(app.get('views'), 'layouts'), // carpeta donde estan los layouts
+    partialDir: path.join(app.get('views'), 'partials'), // carpeta donde estan los partials
+    helpers: require('./lib/handlebars'), // funciones de ayuda para handlebars 
 }));
-app.set('view engine', '.hbs');
+app.set('view engine', '.hbs'); // motor de plantillas
 
 // Middleware
 app.use(session({
-    secret: secret,
-    resave: false,
-    saveUninitialized: false,
-    store: new MySQLStore(database),
-    cookie: { secure: false, maxAge: null }  // SECURE: false para que funcione en http, maxAge: null para que no expire la sesion
+    secret: secret, // clave secreta para la sesion
+    resave: false, // para que no se renueve la sesion
+    saveUninitialized: false, // para que no se vuelva a guardar la sesion
+    store: new MySQLStore(database), // para guardar la sesion en la base de datos
+    cookie: { secure: false, maxAge: 2 * 60 * 1000}  // SECURE: false para que funcione en http, maxAge: null para que no expire la sesion
                                              // en produccion se debe poner secure: true
 }));
-app.use(flash());  
-app.use(morgan('dev'));
-app.use(express.urlencoded({extended: false}));
-app.use(express.json()); 
+app.use(flash());  // para mostrar mensajes en la vista
+app.use(morgan('dev')); // mientras esta en ejecucion la aplicacion muestra mensajes en consola
+app.use(express.urlencoded({extended: false})); // para que el servidor entienda los datos que envia un formulario
+app.use(express.json()); // para que el servidor entienda los datos que envia un formulario
 app.use(passport.initialize()); //inicializa passport
 app.use(passport.session());    //para que passport pueda guardar los datos del usuario en la sesion
 
@@ -70,11 +54,10 @@ app.use((req, res, next) => {
 // Routes
 app.use(require('./routes'));
 app.use(require('./routes/authentication'));
-// app.use('/links', require('./routes/links'));
 app.use('/users', require('./routes/users'));
 
 // Public
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'))); // para que la carpeta public sea accesible desde el navegador
 
 // Starting the server
 app.listen(app.get('port'), () => {

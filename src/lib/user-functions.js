@@ -100,10 +100,10 @@ async function updateUserStatus(req, res, id, status, newPassword = null) {
  */
 async function updateUserRoles (id, newRoles) {
     try {
-        // 1. Obtener los roles actuales del usuario desde la tabla users_roles
+        // Se Obtienen los roles actuales del usuario desde la tabla users_roles
         const currentRoleNames = await getUserRoles(id);
         
-        // 2. Comparar los roles nuevos con los actuales
+        // Se Comparan los roles nuevos con los actuales
 
         // Roles para agregar (en newRoles pero no en currentRoles)
         const rolesToAdd = newRoles.filter(role => !currentRoleNames.includes(role));
@@ -111,7 +111,7 @@ async function updateUserRoles (id, newRoles) {
         // Roles para eliminar (en currentRoles pero no en newRoles)
         const rolesToRemove = currentRoleNames.filter(role => !newRoles.includes(role));
         
-        // 3. Agregar los nuevos roles a users_roles
+        // Se agregan los nuevos roles a users_roles
         for (const role of rolesToAdd) {
             const roleId = await pool.query('SELECT id FROM roles WHERE nombre = ?', [role]);
             if (roleId.length > 0) {
@@ -120,7 +120,7 @@ async function updateUserRoles (id, newRoles) {
             }
         }
 
-        // 4. Eliminar los roles no seleccionados de users_roles
+        // Se liminan los roles no seleccionados de users_roles
         for (const role of rolesToRemove) {
             const roleId = await pool.query('SELECT id FROM roles WHERE nombre = ?', [role]);
             if (roleId.length > 0) {
