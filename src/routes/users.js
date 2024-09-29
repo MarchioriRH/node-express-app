@@ -3,126 +3,8 @@ const router = express.Router();
 const { isLoggedIn, checkRoles } = require('../lib/auth');
 const pool = require('../database');
 const helpers = require('../lib/helpers');
-const { use } = require('passport');
 
-// Funciones comunes
-/**
- * Funcion para obtener un usuario por su ID
- * @param {*} id 
- * @returns  
- */
-async function getUserById(id) {
-    const users = await pool.query('SELECT * FROM users WHERE ID = ?', [id]);
-    if (users.length === 0) return null;
-    return users[0];
-}
-
-/**
- * Funcion para manejar el caso en que un usuario no sea encontrado
- * @param {*} req 
- * @param {*} res 
- * @returns 
- */
-function handleUserNotFound(req, res) {
-    req.flash('message', 'Usuario no encontrado');
-    return res.redirect('/users');
-}
-
-/**
- * Funcion para actualizar el estado de un usuario en la BBDD
- * @param {*} req 
- * @param {*} res 
- * @param {*} id 
- * @param {*} role 
- * @param {*} status 
- * @param {*} newPassword 
- * @returns 
- */
-async function updateUserStatus(req, res, id, role, status, newPassword = null) {
-    try {
-        const user = await getUserById(id);
-        if (!user) return handleUserNotFound(req, res);
-        
-        // Obtener la lista de roles desde req.body
-        let roles = req.body['role[]'];
-
-        // Verificar si es un array o solo un valor
-        if (!Array.isArray(roles)) {
-            roles = [roles];  // Si es un solo valor, lo convertimos en un array
-        }
-        
-        user.status = status;
-        if (req.body.fullname) {
-            user.fullname = req.body.fullname;
-        }    
-        if (req.body.email) {
-            user.email = req.body.email;
-        }
-        if (newPassword) {
-            user.password = await helpers.encryptPassword(newPassword);
-        }
-        if (user.isnew === 1 && status === 'activo') {
-            user.isnew = 0;
-        }
-
-        await pool.query('UPDATE users SET ? WHERE id = ?', [user, id]);
-        
-        await updateUserRoles(id, roles);
-
-        req.flash('success', 'Usuario actualizado satisfactoriamente');
-        const pendingUsers = await pool.query('SELECT * FROM users WHERE isnew = 1');
-        res.redirect(pendingUsers.length === 0 ? '/users' : '/users/pending');
-    } catch (error) {
-        req.flash('message', 'Error al actualizar el usuario');
-        res.redirect('/users');
-    }
-}
-
-async function updateUserRoles (id, newRoles) {
-    try {
-        // 1. Obtener los roles actuales del usuario desde la tabla users_roles
-        const currentRoleNames = await getUserRoles(id);
-        
-        // 2. Comparar los roles nuevos con los actuales
-
-        // Roles para agregar (en newRoles pero no en currentRoles)
-        const rolesToAdd = newRoles.filter(role => !currentRoleNames.includes(role));
-        
-        // Roles para eliminar (en currentRoles pero no en newRoles)
-        const rolesToRemove = currentRoleNames.filter(role => !newRoles.includes(role));
-        
-        // 3. Agregar los nuevos roles a users_roles
-        for (const role of rolesToAdd) {
-            const roleId = await pool.query('SELECT id FROM roles WHERE nombre = ?', [role]);
-            if (roleId.length > 0) {
-                await pool.query('INSERT INTO users_roles SET ?', { user_id: id, role_id: roleId[0].id });
-                console.log(`Role '${role}' added to user ${id}`);
-            }
-        }
-
-        // 4. Eliminar los roles no seleccionados de users_roles
-        for (const role of rolesToRemove) {
-            const roleId = await pool.query('SELECT id FROM roles WHERE nombre = ?', [role]);
-            if (roleId.length > 0) {
-                await pool.query('DELETE FROM users_roles WHERE user_id = ? AND role_id = ?', [id, roleId[0].id]);
-                console.log(`Role '${role}' removed from user ${id}`);
-            }
-        }
-
-    } catch (error) {
-        console.error('Error updating user roles:', error);
-    }
-};
-
-
-async function getUserRoles(userId) {    
-    const userRoles = await pool.query(`SELECT r.nombre 
-        FROM users_roles ur 
-        INNER JOIN roles r 
-        ON ur.role_id = r.id  
-        WHERE ur.user_id = ?`, [userId]);
-    return userRoles.map(role => role.nombre);
-}
+const { getUserById, handleUserNotFound, updateUserStatus, getUserRoles, getAllUsers } = require('../lib/user-functions.js');
 
 // Rutas
 /**
@@ -131,32 +13,28 @@ async function getUserRoles(userId) {
  * @category Rutas
  * @path {GET} /users/create Crear usuario
  */
-router.get('/create', isLoggedIn, checkRoles(['admin']), (req, res) => res.render('auth/signup'));
+// router.get('/create', isLoggedIn, checkRoles(['admin']), (req, res) => res.render('auth/signup'));
+
+
 
 /**
  * @path {POST} /
  */
 router.get('/', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     try {
-        const users = await pool.query('SELECT * FROM users');
-        const roles = await pool.query('SELECT * FROM roles'); // Si es necesario usar los roles globalmente en el template
-
+        const users = await getAllUsers();
         for (const user of users) {
-            // Obtener los roles de cada usuario utilizando un JOIN para evitar múltiples consultas
+            // Obtener los roles de cada usuario
             const userRoles = await getUserRoles(user.id);
-            //console.log('userRoles:', userRoles);
             // Guardar los roles del usuario como un array de nombres
             user.roles = userRoles; // Esto almacena los nombres de los roles en un array
-        }
-
-        //console.log('Users with roles:', users);
-        res.render('users/list', { users, roles }); // Pasamos los usuarios y los roles al template
+        }      
+        res.render('users/list', { users }); // Pasamos los usuarios y los roles al template
     } catch (error) {
         console.error('Error retrieving users and roles:', error);
         res.status(500).send('Error retrieving users and roles');
     }
 });
-
 
 router.get('/delete/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
     const userToDelete = await getUserById(req.params.id);
@@ -175,7 +53,7 @@ router.get('/activate/:id', isLoggedIn, checkRoles(['admin']), async (req, res) 
 });
 
 router.post('/activate/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
-    await updateUserStatus(req, res, req.params.id, req.body.role, req.body.status);
+    await updateUserStatus(req, res, req.params.id, req.body.status);
 });
 
 router.get('/edit/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
@@ -186,7 +64,7 @@ router.get('/edit/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
 });
 
 router.post('/edit/:id', isLoggedIn, checkRoles(['admin']), async (req, res) => {
-    await updateUserStatus(req, res, req.params.id, req.body.role, req.body.status);
+    await updateUserStatus(req, res, req.params.id, req.body.status);
 });
 
 router.get('/profile/:id', isLoggedIn, async (req, res) => {
@@ -198,8 +76,7 @@ router.get('/profile/:id', isLoggedIn, async (req, res) => {
 
 router.get('/profile/edit/:id', isLoggedIn, async (req, res) => {
     const user = await getUserById(req.params.id);
-    if (!user) return handleUserNotFound(req, res);
-    
+    if (!user) return handleUserNotFound(req, res);    
     res.render('users/profile-edit', { user });
 });
 
@@ -228,7 +105,7 @@ router.post('/profile/edit/:id', isLoggedIn, async (req, res) => {
         return res.redirect(`/users/profile/edit/${req.params.id}`);
     }
 
-    await updateUserStatus(req, res, req.params.id, userToEdit.role, userToEdit.status, newPassword);
+    await updateUserStatus(req, res, req.params.id, userToEdit.status, newPassword);
 });
 
 module.exports = router;

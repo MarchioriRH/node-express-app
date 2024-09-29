@@ -8,7 +8,6 @@
                         <th>Id</th>
                         <th>Usuario</th>
                         <th>Email</th>
-                        <th>Rol</th>
                         <th>Estado</th>
                         <th>Roles</th>
                         <th>Acciones</th>
@@ -20,7 +19,6 @@
                         <td>{{id}}</td>
                         <td>{{username}}</td>
                         <td>{{email}}</td>
-                        <td>{{role}}</td>
                         <td>{{status}}</td>
                         <td>
                             {{#each roles}}
@@ -40,13 +38,13 @@
             </table>
         </div>
     </div>
-    {{#if (eq users.[0].isnew 0) }}
+    {{!-- {{#if (eq users.[0].isnew 0) }}
         <div class="row">
             <div class="col-md-12">
                 <a href="/users/create" class="btn btn-success">Crear nuevo usuario</a>
             </div>
         </div>
-    {{/if}}
+    {{/if}} --}}
 </div>
 <script type="text/javascript">
     function confirmDelete(userName) {

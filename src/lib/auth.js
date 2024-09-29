@@ -14,20 +14,12 @@ module.exports = {
         } 
         return res.redirect('/dashboard');  
     },
-    // Si el usuario es un administrador, se ejecuta next() y se redirige a la pagina de administrador
-    isAdmin(req, res, next) {
-        if (req.user.role === 'admin') {
-            return next();
-        }
-        req.flash('message', 'No tienes permisos para acceder a esta página');
-        return res.redirect('/dashboard');
-    },
-
+   // Chequea si el usuario tiene los roles necesarios para acceder a la pagina
     checkRoles(roles) {
         return function(req, res, next) {
-            if (roles.includes(req.user.role)) {
+            if (roles.some(role => req.user.roles.includes(role))) {
                 return next();
-            }
+            }            
             req.flash('message', 'No tienes permisos para acceder a esta página');
             return res.redirect('/dashboard');
         }

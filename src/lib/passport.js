@@ -2,6 +2,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const helpers = require('../lib/helpers');
 const pool = require('../database');
+const { getUserById, getUserRoles, getUserByUsername, getAllUsers } = require('./user-functions');
 
 // se crea una nueva estrategia para el signin
 passport.use('local.signin', new LocalStrategy({
@@ -9,9 +10,8 @@ passport.use('local.signin', new LocalStrategy({
     passwordField: 'password',
     passReqToCallback: true // permite recibir mas parametros en la funcion
 }, async (req, username, password, done) => {
-    const rows = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (rows.length > 0) { // si se encontro el usuario
-        const user = rows[0]; // se obtiene el usuario
+    const user = await getUserByUsername(username); // se busca el usuario por su nombre
+    if (user) { // si se encontro el usuario
         if (user.status === 'inactivo') { // si el usuario esta deshabilitado
             return done(null, false, req.flash('message', 'El usuario no se encuentra habilitado. Por favor, pongase en contacto con el administrador.'));
         }
@@ -23,6 +23,7 @@ passport.use('local.signin', new LocalStrategy({
         } else {
             done(null, false, req.flash('message', 'El nombre de usuario o la contraseña son incorrectos.'));
         }
+        user.roles = await getUserRoles(user.id);
     // si no se encontro el usuario
     } else {
         // se pasa un mensaje de error y un false para el valor de usuario
@@ -37,7 +38,7 @@ passport.use('local.signup', new LocalStrategy({
     passwordField: 'password',
     passReqToCallback: true
 }, async (req, username, password, done) => {
-    const users = await pool.query('SELECT * FROM users');
+    const users = await getAllUsers(); // se obtienen todos los usuarios
     if (users.length > 0) { // si el usuario ya existe
         if (users.find(user => user.username === username)) {
             return done(null, false, req.flash('message', 'El nombre de usuario ya existe.'));
@@ -54,7 +55,6 @@ passport.use('local.signup', new LocalStrategy({
     const { fullname } = req.body;
     const { email } = req.body;
     const status = 'inactivo'; // se establece el estado del usuario
-    const role = 'guest'; // se establece el rol del usuario
     const isNew = 1;
     const newUser = {
         username,
@@ -62,13 +62,11 @@ passport.use('local.signup', new LocalStrategy({
         fullname,
         email, 
         status,
-        role, 
         isNew
     };
     try {
         newUser.password = await helpers.encryptPassword(password);
         const result = await pool.query('INSERT INTO users SET ?', [newUser]);
-        await pool.query('INSERT INTO users_roles SET ?', { user_id: result.insertId, role_id: 4 });
         newUser.id = result.insertId; // se obtiene el id del usuario y se agrega
         return done(null, newUser); // se pasa el usuario para almacenarlo en la sesion
     } catch (error) {
@@ -85,6 +83,7 @@ passport.serializeUser((user, done) => {
 
 // Deserialización: recupera los detalles completos del usuario a partir del ID almacenado.
 passport.deserializeUser(async (id, done) => {
-    const rows = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
-    done(null, rows[0]);
+    const user = await getUserById(id);
+    user.roles = await getUserRoles(id);
+    done(null, user);
 });

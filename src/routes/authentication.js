@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const { isLoggedIn, isNotLoggedIn, isAdmin } = require('../lib/auth');
+const { isLoggedIn, isNotLoggedIn, checkRoles } = require('../lib/auth');
 
 const { signinValidation, signupValidation } = require('../lib/validators'); 
 const { validationResult } = require('express-validator');
+
+const { getAllUsers } = require('../lib/user-functions.js');
 
 
 const pool = require('../database');
@@ -51,6 +53,9 @@ router.post('/signin', isNotLoggedIn, signinValidation, (req, res, next) => {
         });
     }
 
+    const user = req.body;
+    //console.log('Usuario ', user);
+
     passport.authenticate('local.signin', {
         successRedirect: '/dashboard',
         failureRedirect: '/signin',
@@ -61,13 +66,13 @@ router.post('/signin', isNotLoggedIn, signinValidation, (req, res, next) => {
 router.get('/dashboard', isLoggedIn, async (req, res) => {
     try {
         // Realiza la consulta para obtener todos los usuarios
-        const users = await pool.query('SELECT * FROM users');
+        const users = await getAllUsers();
 
         // Verifica si hay algún usuario con el atributo isnew == 1
         const hasNewUser = users.some(user => user.isnew === 1);
-
+        
         // Define el mensaje según el estado de isnew
-        if (req.user.role === 'admin') { 
+        if (checkRoles(['admin'])) { 
             let message = null;
             if (hasNewUser)  {
                 message = 'Hay usuarios nuevos que requieren tu atención.';

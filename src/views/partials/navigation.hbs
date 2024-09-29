@@ -21,7 +21,7 @@
             <li><a class="dropdown-item" href="">Agregar nuevo beneficiario</a></li>
           </ul>
         </li>
-        {{#if (eq user.role 'admin')}}
+        {{#contains user.roles 'admin'}}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Usuarios
@@ -35,7 +35,7 @@
             <li><a class="dropdown-item" href="/users/create">Agregar nuevo usuario</a></li>
           </ul>
         </li>
-        {{/if}}
+        {{/contains}}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Perfil
