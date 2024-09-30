@@ -71,12 +71,15 @@ router.get('/profile/:id', isLoggedIn, async (req, res) => {
     const user = await getUserById(req.params.id);
     if (!user) return handleUserNotFound(req, res);
     const userRoles = await getUserRoles(user.id);
+    user.roles = userRoles;
     res.render('users/profile', { user, userRoles });
 });
 
 router.get('/profile/edit/:id', isLoggedIn, async (req, res) => {
     const user = await getUserById(req.params.id);
-    if (!user) return handleUserNotFound(req, res);    
+    if (!user) return handleUserNotFound(req, res); 
+    const userRoles = await getUserRoles(user.id);
+    user.roles = userRoles;   
     res.render('users/profile-edit', { user });
 });
 

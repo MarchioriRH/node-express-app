@@ -31,9 +31,9 @@ app.use(session({
     secret: secret, // clave secreta para la sesion
     resave: false, // para que no se renueve la sesion
     saveUninitialized: false, // para que no se vuelva a guardar la sesion
+    rolling: true, // para que la sesion se renueve en cada peticion
     store: new MySQLStore(database), // para guardar la sesion en la base de datos
-    cookie: { secure: false, maxAge: 2 * 60 * 1000}  // SECURE: false para que funcione en http, maxAge: null para que no expire la sesion
-                                             // en produccion se debe poner secure: true
+    cookie: { secure: false, maxAge: 100000 }  // SECURE: false para que funcione en http, maxAge: 60000, tiempo de vida de la sesion
 }));
 app.use(flash());  // para mostrar mensajes en la vista
 app.use(morgan('dev')); // mientras esta en ejecucion la aplicacion muestra mensajes en consola

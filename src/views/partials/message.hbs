@@ -1,46 +1,18 @@
 
+{{!-- Este parcial se utiliza para mostrar mensajes generales, mensajes de error o éxito en la aplicación. --}} 
 {{#if message}}
-{{!-- <div class="container p-4">
-    <div class="row">
-        <div class="col-md-4 mx-auto">--}}
-            <span class="alert alert-danger mx-auto w-100" role="alert" > 
-                {{message}}
-            </span>
-                {{!-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </>
-        </div>
-    </div>
-</div> --}}
+  {{message}}
 {{/if}}
 
 {{#if success}}
-{{!-- <div class="container p-4">
-    <div class="row">
-        <div class="col-md-4 mx-auto">
-            <div class="alert alert-success alert-dismissible fade show" role="alert"> --}}
-                {{success}}
-                {{!-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-</div> --}}
+  {{success}}
 {{/if}}
 
-
 {{#if errors}}
-{{!-- <div class="container p-4"></div>
-    <div class="row">
-        <div class="col-md-4 mx-auto">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">                     --}}
-                <ul>
-                    {{#each errors}}
-                        <li>{{this.msg}}</li>
-                    {{/each}}
-                </ul>
-                {{!-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-</div> --}}
+  <ul>
+    {{#each errors}}
+      <li>{{this.msg}}</li>
+    {{/each}}
+  </ul>
 {{/if}}
 
